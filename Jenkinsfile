@@ -57,5 +57,10 @@ pipeline {
                 publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '\\functionaltest\\target\\surefire-reports', reportFiles: 'index.html', reportName: 'UI Test Report', reportTitles: ''])
             }
        }
+        stage('Execute JMeter Performance Tests') {
+            steps {
+   build job: 'JMeter - Freestyle', parameters: [[$class: 'StringParameterValue', name: 'VirtualUsers', value: '1']]
+            }}
+            }
     }
 }
