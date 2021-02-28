@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'sh mvn clean install -Dlicense.skip=true'
+        sh 'mvn compile'
       }
     }
 
