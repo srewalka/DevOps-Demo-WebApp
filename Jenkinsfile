@@ -10,7 +10,7 @@ pipeline {
             steps {
                 slackSend channel: 'alerts', message: 'Discovery phase pipeline test'
                 slackSend channel: 'alerts', message: 'Project checkout from Git'
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/devopsuser1000/DevOps-Demo-WebApp.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/srewalka/DevOps-Demo-WebApp.git']]])
                 slackSend channel: 'alerts', message: 'Git checkout complete'
             }
         }
@@ -46,7 +46,7 @@ pipeline {
                //     sh "scp -o StrictHostKeyChecking=no target/AVNCommunication-1.0.war ubuntu@ec2-18.218.198.155:/var/lib/tomcat8/webapps/QAWebapp.war"
                //     sh "scp -o StrictHostKeyChecking=no -r target/AVNCommunication-1.0 ubuntu@ec2-18.218.198.155:/var/lib/tomcat8/webapps/QAWebapp"
                // }               
-               deploy adapters: [tomcat8(url: 'http://35.226.4.247:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
+               deploy adapters: [tomcat8(url: 'http://3.140.207.254:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
             
         }
        }
