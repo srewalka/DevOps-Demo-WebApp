@@ -10,11 +10,10 @@ pipeline {
             steps {
                 slackSend channel: 'alerts', message: 'Discovery phase pipeline test'
                 slackSend channel: 'alerts', message: 'Project checkout from Git'
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/devopsuser1000/DevOps-Demo-WebApp.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/rahulrayala/DevOps-Demo-WebApp.git']]])
                 slackSend channel: 'alerts', message: 'Git checkout complete'
             }
-        }
-      /*  
+       }  
         stage('Sonarqube Scanner') {
             environment {
                 scannerHome = tool 'sonarqube'
@@ -24,12 +23,10 @@ pipeline {
                 withSonarQubeEnv('sonarqube') {
                     sh """${scannerHome}/bin/sonar-scanner"""
                 }
-               // timeout(time: 2, unit: 'MINUTES') {
-               //     waitForQualityGate abortPipeline: true
-                //}
+               }
                 slackSend channel: 'alerts', message: 'Static code analysis is complete'
                 }
-        } */
+        } 
         
         stage('Build Project') {
             steps {
@@ -37,14 +34,27 @@ pipeline {
        
                 //sh 'mvn compile'
                 sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+		 slackSend channel: 'alerts', message: 'Build completed successfully'
+            }
+            post {
+       always {
+           jiraSendBuildInfo branch: 'DEV-4', site: 'devopssquad13.atlassian.net'
+       }
             }
         }
         stage('Deploy To Test') {
             steps {
                slackSend channel: 'alerts', message: 'Deploy the Application to the Test environment'             
-               deploy adapters: [tomcat8(url: 'http://18.217.76.60:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
+               deploy adapters: [tomcat8(url: 'http://104.197.198.124:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
             
         }
+            post {
+       always {
+           jiraSendDeploymentInfo environmentId: 'http://104.197.198.124:8080/', environmentName: 'http://104.197.198.124:8080/', environmentType: 'testing', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
+               slackSend channel: 'alerts', message: 'Application deployed to Test environment'
+       }
+		    
+            }
        }
        
        
@@ -58,7 +68,7 @@ pipeline {
 			)
 				rtServer (
                     			id: 'ARTIFACTORY_SERVER',
-                    			url: 'https://devops1000.jfrog.io/artifactory',
+                    			url: 'https://rahulrayala1.jfrog.io/artifactory',
                     			credentialsId: 'deploy'
                 			)
                 	rtMavenDeployer (
@@ -88,8 +98,7 @@ pipeline {
             	slackSend channel: 'alerts', message: 'UI Tests Complete!'
             }
        }
-       
-  /*  
+    /* 
     stage('Performance Test'){
         steps{
         	slackSend channel: 'alerts', message: 'Starting Performance Test...'
@@ -97,15 +106,19 @@ pipeline {
         	slackSend channel: 'alerts', message: 'Performance Test Complete!'   
         }
         }
-      */
-
+*/
     stage ('Deploy To Prod') {
         steps {
         	slackSend channel: 'alerts', message: 'Starting deployment to Production...'
             sh 'mvn clean install -f pom.xml'
-            deploy adapters: [tomcat8(credentialsId: 'tomcat', path: '', url: 'http://3.140.189.208:8080')], contextPath: 'ProdWebapp', war: '**/*.war'
+            deploy adapters: [tomcat8(credentialsId: 'tomcat', path: '', url: 'http://34.121.97.193:8080')], contextPath: 'ProdWebapp', war: '**/*.war'
         	slackSend channel: 'alerts', message: 'Production deployment complete!'
         }
+         post {
+       always {
+           jiraSendDeploymentInfo environmentId: 'http://34.121.97.193:8080/', environmentName: 'http://34.121.97.193:8080/', environmentType: 'production', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
+       }
+            }
     }
     
     stage('Sanity Test') {
