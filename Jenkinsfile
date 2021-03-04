@@ -10,11 +10,11 @@ pipeline {
             steps {
                 slackSend channel: 'alerts', message: 'Discovery phase pipeline test'
                 slackSend channel: 'alerts', message: 'Project checkout from Git'
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/rahulrayala/DevOps-Demo-WebApp.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/srewalka/DevOps-Demo-WebApp.git']]])
                 slackSend channel: 'alerts', message: 'Git checkout complete'
             }
        }  
-        stage('Sonarqube Scanner') {
+  /*      stage('Sonarqube Scanner') {
             environment {
                 scannerHome = tool 'sonarqube'
             }
@@ -27,7 +27,7 @@ pipeline {
                 slackSend channel: 'alerts', message: 'Static code analysis is complete'
                 }
         } 
-        
+    */    
         stage('Build Project') {
             steps {
                 slackSend channel: 'alerts', message: 'Building project...'
@@ -45,12 +45,12 @@ pipeline {
         stage('Deploy To Test') {
             steps {
                slackSend channel: 'alerts', message: 'Deploy the Application to the Test environment'             
-               deploy adapters: [tomcat8(url: 'http://104.197.198.124:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
+               deploy adapters: [tomcat8(url: 'http://3.22.164.15:8080/', credentialsId: 'tomcat', path: '' )], contextPath: '/QAWebapp', war: '**/*.war'
             
         }
             post {
        always {
-           jiraSendDeploymentInfo environmentId: 'http://104.197.198.124:8080/', environmentName: 'http://104.197.198.124:8080/', environmentType: 'testing', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
+           jiraSendDeploymentInfo environmentId: 'http://3.22.164.15:8080/', environmentName: 'http://3.22.164.15:8080/', environmentType: 'testing', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
                slackSend channel: 'alerts', message: 'Application deployed to Test environment'
        }
 		    
@@ -68,7 +68,7 @@ pipeline {
 			)
 				rtServer (
                     			id: 'ARTIFACTORY_SERVER',
-                    			url: 'https://rahulrayala1.jfrog.io/artifactory',
+                    			url: 'https://devopstestuseast.jfrog.io/artifactory',
                     			credentialsId: 'deploy'
                 			)
                 	rtMavenDeployer (
@@ -111,12 +111,12 @@ pipeline {
         steps {
         	slackSend channel: 'alerts', message: 'Starting deployment to Production...'
             sh 'mvn clean install -f pom.xml'
-            deploy adapters: [tomcat8(credentialsId: 'tomcat', path: '', url: 'http://34.121.97.193:8080')], contextPath: 'ProdWebapp', war: '**/*.war'
+            deploy adapters: [tomcat8(credentialsId: 'tomcat', path: '', url: 'http://52.15.241.215:8080')], contextPath: 'ProdWebapp', war: '**/*.war'
         	slackSend channel: 'alerts', message: 'Production deployment complete!'
         }
          post {
        always {
-           jiraSendDeploymentInfo environmentId: 'http://34.121.97.193:8080/', environmentName: 'http://34.121.97.193:8080/', environmentType: 'production', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
+           jiraSendDeploymentInfo environmentId: 'http://52.15.241.215:8080/', environmentName: 'http://52.15.241.215:8080/', environmentType: 'production', issueKeys: ['DEV-4'], serviceIds: [''], site: 'devopssquad13.atlassian.net', state: 'successful'
        }
             }
     }
